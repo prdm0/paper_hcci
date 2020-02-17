@@ -1,2 +1,2 @@
-# paper_mestrado
-Paper da dissertração de mestrado
+# Paper dos trabalhos desenvolvidos no mestrado
+
