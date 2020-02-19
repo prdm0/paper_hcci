@@ -9,12 +9,20 @@
 
 data("marketing", package = "datarium")
 head(marketing, 4)
-model <- lm(sales ~ youtube + facebook + newspaper, data = marketing)
-summary(model)
+formula <- lm(sales ~ youtube + facebook + newspaper, data = marketing)
+summary(formula)
 
-hc <- function(formula, ...) {
+library(data.table)
+
+hc <- function(formula, hc = 3L, ...) {
   if (class(formula) == "lm")
     stop("\'formula\' must be an object of the \'lm\' class.")
   
+  data <- data.table(formula$model)
+  
+  X <- data.table(intercept = 1, data[, -1])
+  y <- data[ ,1]
+  
+  qr.R()
   
 }
