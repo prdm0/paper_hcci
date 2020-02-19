@@ -20,9 +20,13 @@ hc <- function(formula, hc = 3L, ...) {
   
   data <- data.table(formula$model)
   
-  X <- data.table(intercept = 1, data[, -1])
-  y <- data[ ,1]
+  X <- as.matrix(data.table(intercept = 1, data[, -1]))
+  y <- as.matrix(data[ ,1])
   
-  qr.R()
+  R <- qr.R(qr(X))
+  Q <- qr.Q(qr(X))
+  
+  # solve(t(X) %*% X) %*% t(X) %*% y
+  
   
 }
