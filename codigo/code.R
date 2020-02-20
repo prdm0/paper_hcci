@@ -15,38 +15,38 @@ summary(formula)
 
 library(data.table)
 
-hc <- function(formula, hc = 3L, ...) {
+hc <- function(formula, hc = 0L, ...) {
   if (class(formula) != "lm")
     stop("\'formula\' must be an object of the \'lm\' class.")
   
-  data <- data.table(formula$model)
+  data <- formula$model
   
-  X <- as.matrix(data.table(intercept = 1, data[,-1]))
-  y <- as.matrix(data[, 1])
+  X <- as.matrix(intercept = 1, data[,-1])
+  #y <- as.matrix(data[, 1])
   
-  R <- qr.R(qr(X))
-  Q <- qr.Q(qr(X))
   
-  hc <- as.character(hc)
+  result_qr <- qr(X, LAPACK = TRUE)
+  
+  R <- qr.R(result_qr)
+  Q <- qr.Q(result_qr)
+  
+  invr <- solve(R)
+  
   switch (hc,
           '0' = {
-            omega <- diag(formula$residuals ^ 2L)
-            bread <- solve(R) %*% t(Q)
-            result <- bread %*% omega %*% t(bread)
+            omega <- diag(formula$residuals ^ 2)
+            bread <- tcrossprod(invr, Q)
+            result <- bread %*% tcrossprod(omega, bread)
             return(result)
           })
 }
 
 microbenchmark::microbenchmark(
   hcci::HC(formula, method = 0),
-  hc(formula = formula, hc = 0L),
+  hc(formula = formula, hc = "0"),
   times = 1e3L
 )
 
 
-microbenchmark::microbenchmark(
-  solve(R) %*% t(Q) %*% y,
-  solve(t(X)%*%X)%*%t(X)%*%y,
-  times = 10e3L
-)
+
   
