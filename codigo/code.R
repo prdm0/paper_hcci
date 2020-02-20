@@ -7,21 +7,23 @@
 # Q <- qr.Q(matrix_qr)
 # as.vector(solve(R)%*%t(Q)%*%y) # Estimadores.
 
+library(data.table)
+
 data("marketing", package = "datarium")
 head(marketing, 4)
 formula <-
   lm(sales ~ youtube + facebook + newspaper, data = marketing)
 summary(formula)
 
-library(data.table)
 
-hc <- function(formula, hc = 0L, ...) {
+
+hc <- function(formula, hc = 0L, k = 0.7) {
   if (class(formula) != "lm")
     stop("\'formula\' must be an object of the \'lm\' class.")
   
   data <- formula$model
   
-  X <- as.matrix(intercept = 1, data[,-1])
+  X <- as.matrix(cbind(intercept = 1, data[,-1]))
   #y <- as.matrix(data[, 1])
   
   
@@ -32,18 +34,46 @@ hc <- function(formula, hc = 0L, ...) {
   
   invr <- solve(R)
   
+  hc <- as.character(hc)
   switch (hc,
-          '0' = {
+          "0" = {
             omega <- diag(formula$residuals ^ 2)
             bread <- tcrossprod(invr, Q)
             result <- bread %*% tcrossprod(omega, bread)
             return(result)
-          })
+          },
+          "2" = {
+            omega <- diag(formula$residuals ^ 2 / (1 - hatvalues(formula)))
+            bread <- tcrossprod(invr, Q)
+            result <- bread %*% tcrossprod(omega, bread)
+            return(result)
+          },
+          "3" = {
+            omega <- diag(formula$residuals ^ 2 / (1 - hatvalues(formula)) ^ 2)
+            bread <- tcrossprod(invr, Q)
+            result <- bread %*% tcrossprod(omega, bread)
+            return(result)
+          },
+          "4" = {
+            delta <- pmin(4, h/mean(h))
+            omega <- diag(formula$residuals ^ 2 / (1 - hatvalues(formula)) ^ delta)
+            bread <- tcrossprod(invr, Q)
+            result <- bread %*% tcrossprod(omega, bread)
+            return(result)
+          },
+          "5" = {
+            alpha <- pmin(h/mean(h), max(4, k * max(h)/mean(h)))
+            omega <- diag(formula$residuals ^ 2 / sqrt((1 - hatvalues(formula)) ^ alpha))
+            bread <- tcrossprod(invr, Q)
+            result <- bread %*% tcrossprod(omega, bread)
+            return(result)
+          }
+  )
 }
 
 microbenchmark::microbenchmark(
   hcci::HC(formula, method = 0),
-  hc(formula = formula, hc = "0"),
+  hc(formula = formula, hc = 5),
   times = 1e3L
 )
 
