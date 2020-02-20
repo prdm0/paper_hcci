@@ -26,7 +26,17 @@ hc <- function(formula, hc = 3L, ...) {
   R <- qr.R(qr(X))
   Q <- qr.Q(qr(X))
   
-  # solve(t(X) %*% X) %*% t(X) %*% y
+  
+  switch (hc,
+    '0' = {
+      omega <- diag(formula$residuals ^ 2L)
+      solve(R) %*% t(Q)
+    }
+  )
+  
+  
+  solve(R) %*% t(Q) %*% y
+  
   
   
 }
