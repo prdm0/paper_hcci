@@ -9,34 +9,44 @@
 
 data("marketing", package = "datarium")
 head(marketing, 4)
-formula <- lm(sales ~ youtube + facebook + newspaper, data = marketing)
+formula <-
+  lm(sales ~ youtube + facebook + newspaper, data = marketing)
 summary(formula)
 
 library(data.table)
 
 hc <- function(formula, hc = 3L, ...) {
-  if (class(formula) == "lm")
+  if (class(formula) != "lm")
     stop("\'formula\' must be an object of the \'lm\' class.")
   
   data <- data.table(formula$model)
   
-  X <- as.matrix(data.table(intercept = 1, data[, -1]))
-  y <- as.matrix(data[ ,1])
+  X <- as.matrix(data.table(intercept = 1, data[,-1]))
+  y <- as.matrix(data[, 1])
   
   R <- qr.R(qr(X))
   Q <- qr.Q(qr(X))
   
-  
+  hc <- as.character(hc)
   switch (hc,
-    '0' = {
-      omega <- diag(formula$residuals ^ 2L)
-      solve(R) %*% t(Q)
-    }
-  )
-  
-  
-  solve(R) %*% t(Q) %*% y
-  
-  
-  
+          '0' = {
+            omega <- diag(formula$residuals ^ 2L)
+            bread <- solve(R) %*% t(Q)
+            result <- bread %*% omega %*% t(bread)
+            return(result)
+          })
 }
+
+microbenchmark::microbenchmark(
+  hcci::HC(formula, method = 0),
+  hc(formula = formula, hc = 0L),
+  times = 1e3L
+)
+
+
+microbenchmark::microbenchmark(
+  solve(R) %*% t(Q) %*% y,
+  solve(t(X)%*%X)%*%t(X)%*%y,
+  times = 10e3L
+)
+  
