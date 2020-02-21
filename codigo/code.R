@@ -21,6 +21,8 @@ hc <- function(formula, hc = 0L, k = 0.7) {
   
   invr <- solve(R)
   
+  h <- hatvalues(formula)
+  
   hc <- as.character(hc)
   switch (hc,
           "0" = {
@@ -30,27 +32,27 @@ hc <- function(formula, hc = 0L, k = 0.7) {
             return(result)
           },
           "2" = {
-            omega <- diag(formula$residuals ^ 2 / (1 - hatvalues(formula)))
+            omega <- diag(formula$residuals ^ 2 / (1 - h))
             bread <- tcrossprod(invr, Q)
             result <- bread %*% tcrossprod(omega, bread)
             return(result)
           },
           "3" = {
-            omega <- diag(formula$residuals ^ 2 / (1 - hatvalues(formula)) ^ 2)
+            omega <- diag(formula$residuals ^ 2 / (1 - h) ^ 2)
             bread <- tcrossprod(invr, Q)
             result <- bread %*% tcrossprod(omega, bread)
             return(result)
           },
           "4" = {
             delta <- pmin(4, h/mean(h))
-            omega <- diag(formula$residuals ^ 2 / (1 - hatvalues(formula)) ^ delta)
+            omega <- diag(formula$residuals ^ 2 / (1 - h) ^ delta)
             bread <- tcrossprod(invr, Q)
             result <- bread %*% tcrossprod(omega, bread)
             return(result)
           },
           "5" = {
             alpha <- pmin(h/mean(h), max(4, k * max(h)/mean(h)))
-            omega <- diag(formula$residuals ^ 2 / sqrt((1 - hatvalues(formula)) ^ alpha))
+            omega <- diag(formula$residuals ^ 2 / sqrt((1 - h) ^ alpha))
             bread <- tcrossprod(invr, Q)
             result <- bread %*% tcrossprod(omega, bread)
             return(result)
@@ -59,8 +61,8 @@ hc <- function(formula, hc = 0L, k = 0.7) {
 }
 
 microbenchmark::microbenchmark(
-  hcci::HC(formula, method = 0),
-  hc(formula = formula, hc = 0),
+  hcci::HC(formula, method = 4),
+  hc(formula = formula, hc = 4),
   times = 1e3L
 )
 
