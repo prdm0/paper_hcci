@@ -44,14 +44,14 @@ hc <- function(formula, hc = 0L, k = 0.7) {
             return(result)
           },
           "4" = {
-            delta <- pmin(4, h/mean(h))
+            delta <- pmin(4, h / mean(h))
             omega <- diag(formula$residuals ^ 2 / (1 - h) ^ delta)
             bread <- tcrossprod(invr, Q)
             result <- bread %*% tcrossprod(omega, bread)
             return(result)
           },
           "5" = {
-            alpha <- pmin(h/mean(h), max(4, k * max(h)/mean(h)))
+            alpha <- pmin(h / mean(h), max(4, k * max(h) / mean(h)))
             omega <- diag(formula$residuals ^ 2 / sqrt((1 - h) ^ alpha))
             bread <- tcrossprod(invr, Q)
             result <- bread %*% tcrossprod(omega, bread)
@@ -61,8 +61,8 @@ hc <- function(formula, hc = 0L, k = 0.7) {
 }
 
 microbenchmark::microbenchmark(
-  hcci::HC(formula, method = 4),
-  hc(formula = formula, hc = 4),
+  hcci::HC(formula, method = 5),
+  hc(formula = formula, hc = 5),
   times = 1e3L
 )
 
