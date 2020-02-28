@@ -2,18 +2,12 @@ data("marketing", package = "datarium")
 head(marketing, 4)
 formula <-
   lm(sales ~ youtube + facebook + newspaper, data = marketing)
-summary(formula)
 
 
-# Function to generate matrix X (matrix of independent variables) ---------
+# Generating original sample ----------------------------------------------
 
-create_x <- function(formula) {
-  data <- formula$model
-  as.matrix(cbind(intercept = 1, data[ ,-1]))
-}
-
-create_y <- function(formula) {
-  data <- formula$model
+original_sample <- function(n = 20L, lambda = 1, balanced = TRUE, error = "weibull") {
+  
 }
 
 # Constant information ----------------------------------------------------
@@ -25,7 +19,7 @@ Q <- qr.Q(result_qr)
 H <- X %*% solve(t(X) %*% X) %*% t(X)
 invr <- solve(R)
 
-olse <- function(X, y) 
+olse <- function(X, y)
   solve(R) %*%  t(Q) %*% y
 
 residuals <- function(H, y) 
