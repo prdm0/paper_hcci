@@ -6,7 +6,10 @@ formula <-
 
 # Generating original sample ----------------------------------------------
 
-original_sample <- function(n = 20L, lambda = 1, balanced = TRUE, error = "weibull") {
+original_sample <- function(n = 20L, npar = 1L, lambda = 1, balanced = TRUE, error = "weibull", args) {
+  error <- do.call(what = paste0("r", error), args = args)
+  error <- (error - mean(error)) / sd(error)
+  
   
 }
 
